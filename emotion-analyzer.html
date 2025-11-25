@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Analyzer - Speech Emotion Recognition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-record {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes wave-pulse {
+            0% {
+                height: 20%;
+            }
+            50% {
+                height: 100%;
+            }
+            100% {
+                height: 20%;
+            }
+        }
+
+        @keyframes thinking-wave {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes data-transfer {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes result-reveal {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes emoji-pop {
+            0% {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.2) rotate(10deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .recording-pulse {
+            animation: pulse-record 1.5s ease-in-out infinite;
+        }
+
+        .wave-bar {
+            animation: wave-pulse 0.8s ease-in-out infinite;
+        }
+
+        .thinking-wave {
+            animation: thinking-wave 2s linear infinite;
+        }
+
+        .data-packet {
+            animation: data-transfer 1s ease-out forwards;
+        }
+
+        .result-reveal {
+            animation: result-reveal 0.5s ease-out forwards;
+        }
+
+        .emoji-pop {
+            animation: emoji-pop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        .visualizer-container {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .emotion-happy {
+            background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+        }
+
+        .emotion-angry {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+
+        .emotion-sad {
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+        }
+
+        .emotion-neutral {
+            background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+        }
+
+        .emotion-excited {
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-3">
+                🎤 Emotion Analyzer
+            </h1>
+            <p class="text-gray-400 text-lg">
+                Advanced Speech Emotion Recognition System
+            </p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-6">
+            
+            <!-- Visual Meter -->
+            <div id="visualizer" class="visualizer-container rounded-xl p-8 h-64 flex items-end justify-center gap-2 overflow-hidden relative">
+                <div id="waveform" class="absolute inset-0 flex items-end justify-center gap-2 p-8 opacity-0 transition-opacity duration-300">
+                    <!-- Waveform bars will be generated here -->
+                </div>
+                <div id="idleState" class="text-center w-full absolute inset-0 flex flex-col items-center justify-center">
+                    <div class="text-6xl mb-4">🎙️</div>
+                    <p class="text-gray-400 text-lg">Ready to capture your voice</p>
+                </div>
+                <!-- Data Transfer Packet -->
+                <div id="dataPacket" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <svg class="w-16 h-16 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="flex gap-4 justify-center flex-wrap">
+                <button id="recordBtn" 
+                        class="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-3">
+                    <span id="recordIcon">⏺</span>
+                    <span id="recordText">Record</span>
+                </button>
+                
+                <button id="analyzeBtn" 
+                        class="hidden px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-3">
+                    <span>🔍</span>
+                    <span>Analyze</span>
+                </button>
+                
+                <button id="resetBtn" 
+                        class="hidden px-8 py-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-3">
+                    <span>🔄</span>
+                    <span>Reset</span>
+                </button>
+            </div>
+
+            <!-- Result Display -->
+            <div id="resultContainer" class="mt-6">
+                <div id="waitingState" class="text-center py-8">
+                    <div class="text-4xl mb-3">⏳</div>
+                    <p class="text-gray-400 text-lg">Waiting for recording...</p>
+                </div>
+
+                <div id="analyzingState" class="hidden text-center py-8">
+                    <div class="relative h-2 bg-gray-700 rounded-full overflow-hidden mb-4">
+                        <div class="absolute inset-0 thinking-wave bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
+                    </div>
+                    <div class="text-4xl mb-3">🧠</div>
+                    <p class="text-purple-400 text-lg font-semibold">Analyzing your emotion...</p>
+                </div>
+
+                <div id="resultState" class="hidden">
+                    <div class="result-reveal bg-gray-700 rounded-xl p-6 relative overflow-hidden">
+                        <!-- Emoji Display -->
+                        <div class="text-center mb-6">
+                            <div id="emotionEmoji" class="text-8xl inline-block emoji-pop"></div>
+                        </div>
+                        
+                        <!-- Emotion Name -->
+                        <div id="emotionCard" class="rounded-lg p-6 text-center mb-4">
+                            <p class="text-white text-sm font-semibold mb-2 opacity-90">PREDICTED EMOTION</p>
+                            <h2 id="emotionName" class="text-white text-4xl font-bold mb-4"></h2>
+                            
+                            <!-- Confidence Score -->
+                            <div class="mt-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-white text-sm font-semibold">Confidence</span>
+                                    <span id="confidenceText" class="text-white text-sm font-bold"></span>
+                                </div>
+                                <div class="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
+                                    <div id="confidenceBar" class="bg-white h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Info -->
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-gray-800 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs mb-1">Duration</p>
+                                <p id="recordDuration" class="text-white text-lg font-semibold">0s</p>
+                            </div>
+                            <div class="bg-gray-800 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs mb-1">Processed</p>
+                                <p class="text-white text-lg font-semibold">✓</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-gray-500 text-sm">
+            <p>🎯 Powered by Advanced Machine Learning | 🔒 Secure & Private</p>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordingStartTime;
+        let waveformInterval;
+
+        // DOM Elements
+        const recordBtn = document.getElementById('recordBtn');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const recordIcon = document.getElementById('recordIcon');
+        const recordText = document.getElementById('recordText');
+        const visualizer = document.getElementById('visualizer');
+        const waveform = document.getElementById('waveform');
+        const idleState = document.getElementById('idleState');
+        const dataPacket = document.getElementById('dataPacket');
+        const waitingState = document.getElementById('waitingState');
+        const analyzingState = document.getElementById('analyzingState');
+        const resultState = document.getElementById('resultState');
+
+        // Initialize Waveform Bars
+        function initializeWaveform() {
+            waveform.innerHTML = '';
+            for (let i = 0; i < 32; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar bg-purple-500 w-2 rounded-t-lg transition-all';
+                bar.style.animationDelay = `${i * 0.05}s`;
+                bar.style.height = '20%';
+                waveform.appendChild(bar);
+            }
+        }
+
+        initializeWaveform();
+
+        // Animate Waveform During Recording
+        function animateWaveform() {
+            const bars = waveform.querySelectorAll('.wave-bar');
+            waveformInterval = setInterval(() => {
+                bars.forEach((bar, index) => {
+                    const randomHeight = Math.random() * 80 + 20;
+                    bar.style.height = `${randomHeight}%`;
+                });
+            }, 100);
+        }
+
+        function stopWaveform() {
+            clearInterval(waveformInterval);
+            const bars = waveform.querySelectorAll('.wave-bar');
+            bars.forEach(bar => {
+                bar.style.height = '20%';
+            });
+        }
+
+        // Record Button Handler
+        recordBtn.addEventListener('click', async () => {
+            if (!isRecording) {
+                // Start Recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        console.log('Recording stopped. Audio blob size:', audioBlob.size);
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordingStartTime = Date.now();
+
+                    // Update UI
+                    recordBtn.classList.add('recording-pulse');
+                    recordBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    recordBtn.classList.add('bg-red-500');
+                    recordIcon.textContent = '⏹';
+                    recordText.textContent = 'Stop';
+                    
+                    // Show waveform
+                    idleState.classList.add('opacity-0');
+                    setTimeout(() => {
+                        idleState.classList.add('hidden');
+                        waveform.classList.remove('opacity-0');
+                        waveform.classList.add('opacity-100');
+                        animateWaveform();
+                    }, 300);
+
+                    // Hide analyze and reset buttons
+                    analyzeBtn.classList.add('hidden');
+                    resetBtn.classList.add('hidden');
+
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    alert('Unable to access microphone. Please grant permission.');
+                }
+            } else {
+                // Stop Recording
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+
+                const recordingDuration = Math.round((Date.now() - recordingStartTime) / 1000);
+                document.getElementById('recordDuration').textContent = `${recordingDuration}s`;
+
+                // Update UI
+                recordBtn.classList.remove('recording-pulse', 'bg-red-500');
+                recordBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                recordIcon.textContent = '⏺';
+                recordText.textContent = 'Record';
+
+                // Stop waveform
+                stopWaveform();
+                
+                // Show analyze and reset buttons
+                analyzeBtn.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
+
+                // Update result state
+                waitingState.innerHTML = `
+                    <div class="text-4xl mb-3">✅</div>
+                    <p class="text-green-400 text-lg font-semibold">Recording complete! (${recordingDuration}s)</p>
+                    <p class="text-gray-400 text-sm mt-2">Click 'Analyze' to detect emotion</p>
+                `;
+            }
+        });
+
+        // Analyze Button Handler
+        analyzeBtn.addEventListener('click', async () => {
+            // Create audio blob
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+
+            // Show data transfer animation
+            dataPacket.classList.remove('hidden');
+            dataPacket.classList.add('data-packet');
+
+            setTimeout(() => {
+                // Hide waiting state, show analyzing state
+                waitingState.classList.add('hidden');
+                analyzingState.classList.remove('hidden');
+                
+                // Hide waveform
+                waveform.classList.add('opacity-0');
+                
+                // Analyze audio
+                analyzeAudio(audioBlob);
+            }, 1000);
+        });
+
+        // Reset Button Handler
+        resetBtn.addEventListener('click', () => {
+            // Reset state
+            audioChunks = [];
+            
+            // Reset UI
+            waitingState.classList.remove('hidden');
+            waitingState.innerHTML = `
+                <div class="text-4xl mb-3">⏳</div>
+                <p class="text-gray-400 text-lg">Waiting for recording...</p>
+            `;
+            analyzingState.classList.add('hidden');
+            resultState.classList.add('hidden');
+            
+            // Show idle state
+            waveform.classList.add('opacity-0');
+            setTimeout(() => {
+                idleState.classList.remove('hidden', 'opacity-0');
+                waveform.innerHTML = '';
+                initializeWaveform();
+            }, 300);
+
+            // Hide buttons
+            analyzeBtn.classList.add('hidden');
+            resetBtn.classList.add('hidden');
+
+            // Reset data packet
+            dataPacket.classList.add('hidden');
+            dataPacket.classList.remove('data-packet');
+        });
+
+        // Mock Analysis Function
+        async function analyzeAudio(audioBlob) {
+            // Simulate API latency
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            // Random emotion selection
+            const emotions = [
+                { name: 'Angry', emoji: '😠', color: 'emotion-angry' },
+                { name: 'Happy', emoji: '😊', color: 'emotion-happy' },
+                { name: 'Sad', emoji: '😢', color: 'emotion-sad' },
+                { name: 'Neutral', emoji: '😐', color: 'emotion-neutral' },
+                { name: 'Excited', emoji: '🤩', color: 'emotion-excited' }
+            ];
+
+            const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+            const confidence = Math.floor(Math.random() * 30 + 70); // 70-99%
+
+            // Display result
+            displayResult(randomEmotion, confidence);
+        }
+
+        // Display Result Function
+        function displayResult(emotion, confidence) {
+            // Hide analyzing state
+            analyzingState.classList.add('hidden');
+            
+            // Update result elements
+            document.getElementById('emotionEmoji').textContent = emotion.emoji;
+            document.getElementById('emotionName').textContent = emotion.name;
+            document.getElementById('confidenceText').textContent = `${confidence}%`;
+            
+            const emotionCard = document.getElementById('emotionCard');
+            emotionCard.className = `rounded-lg p-6 text-center mb-4 ${emotion.color}`;
+            
+            // Show result state
+            resultState.classList.remove('hidden');
+            
+            // Animate confidence bar
+            setTimeout(() => {
+                document.getElementById('confidenceBar').style.width = `${confidence}%`;
+            }, 100);
+
+            // Hide data packet
+            dataPacket.classList.add('hidden');
+            dataPacket.classList.remove('data-packet');
+        }
+    </script>
+</body>
+</html>

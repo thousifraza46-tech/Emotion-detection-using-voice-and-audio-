@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Emotion Recognition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .file-label:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .selected-file {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #555;
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 15px;
+            display: none;
+        }
+
+        #results.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .emotion-item {
+            padding: 12px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .emotion-label {
+            font-weight: 600;
+            color: #333;
+            text-transform: capitalize;
+        }
+
+        .emotion-score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #1565c0;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .feature-list li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Audio Emotion Recognition</h1>
+        <p class="subtitle">Upload an audio file to detect emotions using AI</p>
+
+        <div class="info-box">
+            <strong>💡 How it works:</strong>
+            <ul class="feature-list">
+                <li>Extracts MFCC, Chroma, and Mel-spectrogram features</li>
+                <li>Uses Neural Network for classification</li>
+                <li>Detects: calm, happy, fearful, disgust</li>
+            </ul>
+        </div>
+
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('audioFile').click()">
+            <div class="upload-icon">🎤</div>
+            <p style="color: #667eea; font-weight: 600; margin-bottom: 10px;">
+                Click to upload or drag & drop
+            </p>
+            <p style="color: #999; font-size: 0.9rem;">
+                Supports: MP3, WAV, OGG, M4A
+            </p>
+        </div>
+
+        <input type="file" id="audioFile" accept="audio/*">
+        
+        <div id="selectedFile" class="selected-file" style="display: none;">
+            📁 <span id="fileName"></span>
+        </div>
+
+        <button id="analyzeBtn" onclick="analyzeAudio()" disabled>
+            🚀 Analyze Emotion
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="color: #667eea;">Analyzing audio features...</p>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        // File input handler
+        document.getElementById('audioFile').addEventListener('change', function(e) {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                document.getElementById('fileName').textContent = selectedFile.name;
+                document.getElementById('selectedFile').style.display = 'block';
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        });
+
+        // Drag and drop handlers
+        const uploadArea = document.getElementById('uploadArea');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.remove('dragover');
+            }, false);
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                document.getElementById('audioFile').files = files;
+                selectedFile = files[0];
+                document.getElementById('fileName').textContent = selectedFile.name;
+                document.getElementById('selectedFile').style.display = 'block';
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }, false);
+
+        // Simulate audio analysis (frontend demo)
+        async function analyzeAudio() {
+            if (!selectedFile) {
+                alert('Please select an audio file first!');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('analyzeBtn').disabled = true;
+
+            // Simulate processing time
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Demo results (simulated)
+            const demoEmotions = [
+                { label: 'happy', score: 0.7234 },
+                { label: 'calm', score: 0.1567 },
+                { label: 'fearful', score: 0.0823 },
+                { label: 'disgust', score: 0.0376 }
+            ];
+
+            displayResults(demoEmotions);
+
+            // Hide loading
+            document.getElementById('loading').classList.remove('show');
+            document.getElementById('analyzeBtn').disabled = false;
+        }
+
+        function displayResults(emotions) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="result-title">🎯 Emotion Analysis Results</div>
+                <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">
+                    File: <strong>${selectedFile.name}</strong>
+                </p>
+            `;
+
+            emotions.sort((a, b) => b.score - a.score);
+
+            emotions.forEach(emotion => {
+                const emotionDiv = document.createElement('div');
+                emotionDiv.className = 'emotion-item';
+                emotionDiv.innerHTML = `
+                    <span class="emotion-label">${getEmotionEmoji(emotion.label)} ${emotion.label}</span>
+                    <span class="emotion-score">${(emotion.score * 100).toFixed(2)}%</span>
+                `;
+                resultsDiv.appendChild(emotionDiv);
+            });
+
+            resultsDiv.innerHTML += `
+                <p style="margin-top: 20px; text-align: center; color: #999; font-size: 0.85rem;">
+                    ⚠️ Note: This is a demo version showing simulated results.<br>
+                    For real analysis, use the Jupyter notebook: <strong>improvement1.ipynb</strong>
+                </p>
+            `;
+
+            resultsDiv.classList.add('show');
+        }
+
+        function getEmotionEmoji(emotion) {
+            const emojis = {
+                'happy': '😊',
+                'calm': '😌',
+                'fearful': '😨',
+                'disgust': '🤢',
+                'sad': '😢',
+                'angry': '😠',
+                'surprised': '😲',
+                'neutral': '😐'
+            };
+            return emojis[emotion] || '😐';
+        }
+    </script>
+</body>
+</html>

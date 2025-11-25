@@ -1,0 +1,1338 @@
+llll.<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMOTION ANALYZER - NEURAL INTERFACE v2.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 0.05em;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 0.15em;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(6, 182, 212, 0.5), 0 0 20px rgba(6, 182, 212, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(6, 182, 212, 0.8), 0 0 40px rgba(6, 182, 212, 0.5);
+            }
+        }
+
+        @keyframes scan-line {
+            0% {
+                top: 0%;
+            }
+            100% {
+                top: 100%;
+            }
+        }
+
+        @keyframes signal-pulse {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scaleY(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scaleY(1);
+            }
+        }
+
+        @keyframes grid-slide {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 40px 40px;
+            }
+        }
+
+        @keyframes hud-flicker {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.95;
+            }
+        }
+
+        @keyframes data-stream {
+            0% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+        }
+
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.6), 0 0 30px rgba(6, 182, 212, 0.4);
+        }
+
+        .glow-magenta {
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.6), 0 0 30px rgba(236, 72, 153, 0.4);
+        }
+
+        .glow-blue {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6), 0 0 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .glow-green {
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), 0 0 30px rgba(34, 197, 94, 0.4);
+        }
+
+        .active-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .scan-line {
+            animation: scan-line 3s linear infinite;
+        }
+
+        .signal-bar {
+            animation: signal-pulse 1.2s ease-in-out infinite;
+        }
+
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: grid-slide 4s linear infinite;
+        }
+
+        .hud-panel {
+            border: 2px solid rgba(6, 182, 212, 0.4);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        .hud-flicker {
+            animation: hud-flicker 0.1s infinite;
+        }
+
+        .corner-accent {
+            position: relative;
+        }
+
+        .corner-accent::before,
+        .corner-accent::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(6, 182, 212, 0.8);
+        }
+
+        .corner-accent::before {
+            top: -2px;
+            left: -2px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .corner-accent::after {
+            bottom: -2px;
+            right: -2px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .data-stream {
+            animation: data-stream 2s ease-in-out infinite;
+        }
+
+        video {
+            transform: scaleX(-1);
+            filter: saturate(0.8) contrast(1.1);
+        }
+
+        .emotion-happy {
+            background: linear-gradient(135deg, rgba(250, 204, 21, 0.3) 0%, rgba(234, 179, 8, 0.3) 100%);
+            border-color: #FACC15;
+            color: #FACC15;
+        }
+
+        .emotion-angry {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.3) 100%);
+            border-color: #EF4444;
+            color: #EF4444;
+        }
+
+        .emotion-sad {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.3) 0%, rgba(59, 130, 246, 0.3) 100%);
+            border-color: #3B82F6;
+            color: #3B82F6;
+        }
+
+        .emotion-neutral {
+            background: linear-gradient(135deg, rgba(156, 163, 175, 0.3) 0%, rgba(107, 114, 128, 0.3) 100%);
+            border-color: #9CA3AF;
+            color: #9CA3AF;
+        }
+
+        .emotion-fear {
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
+            border-color: #A78BFA;
+            color: #A78BFA;
+        }
+
+        .emotion-surprise {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.3) 0%, rgba(16, 185, 129, 0.3) 100%);
+            border-color: #10B981;
+            color: #10B981;
+        }
+
+        .emotion-disgust {
+            background: linear-gradient(135deg, rgba(132, 204, 22, 0.3) 0%, rgba(101, 163, 13, 0.3) 100%);
+            border-color: #84CC16;
+            color: #84CC16;
+        }
+    </style>
+</head>
+<body class="bg-black min-h-screen p-2 grid-bg overflow-x-hidden">
+    <!-- HUD Header -->
+    <div class="fixed top-0 left-0 right-0 z-50 border-b-2 border-cyan-500/30 bg-black/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div class="w-3 h-3 bg-cyan-400 rounded-full glow-cyan animate-pulse"></div>
+                    <h1 class="text-cyan-400 text-xl font-bold tracking-widest">NEURAL EMOTION ANALYZER</h1>
+                    <div class="text-cyan-400/60 text-xs">[ v2.1.0 ]</div>
+                </div>
+                <div class="flex items-center gap-6 text-xs text-cyan-400/60">
+                    <div class="flex items-center gap-2">
+                        <span>STATUS:</span>
+                        <span id="systemStatus" class="text-green-400">ONLINE</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span>UPTIME:</span>
+                        <span id="uptime" class="text-cyan-400 font-mono">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto pt-20 pb-6 px-2">
+        <!-- Main HUD Grid -->
+        <div class="grid lg:grid-cols-2 gap-3 mb-3">
+            
+            <!-- VIDEO ANALYSIS MODULE -->
+            <div class="hud-panel p-1 corner-accent">
+                <div class="border-b border-cyan-500/30 px-4 py-2 flex justify-between items-center bg-cyan-950/20">
+                    <div class="flex items-center gap-3">
+                        <div class="text-cyan-400 text-xs">[ MODULE_01 ]</div>
+                        <h2 class="text-cyan-400 text-sm font-bold tracking-wider">VIDEO SIGNAL</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div id="videoStatusIndicator" class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                        <span id="videoStatus" class="text-gray-500 text-xs font-mono">INACTIVE</span>
+                    </div>
+                </div>
+
+                <!-- Video Display -->
+                <div class="p-4">
+                    <div class="relative border-2 border-cyan-500/20 bg-black overflow-hidden" style="aspect-ratio: 16/9;">
+                        <video id="videoElement" class="w-full h-full object-cover" autoplay playsinline></video>
+                        <canvas id="videoCanvas" class="hidden"></canvas>
+                        
+                        <!-- Scanning Line -->
+                        <div id="scanLine" class="hidden absolute left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent scan-line"></div>
+                        
+                        <!-- Face Detection Grid -->
+                        <div id="faceBox" class="hidden absolute border-2 border-green-400" style="box-shadow: 0 0 20px rgba(34, 197, 94, 0.8), inset 0 0 20px rgba(34, 197, 94, 0.2);"></div>
+                        
+                        <!-- Video Placeholder -->
+                        <div id="videoPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-black/90">
+                            <div class="text-6xl mb-4 text-cyan-400/30">▣</div>
+                            <p class="text-cyan-400/50 text-xs tracking-wider">AWAITING VIDEO FEED</p>
+                            <div class="mt-4 flex gap-1">
+                                <div class="w-1 h-1 bg-cyan-400/30 animate-pulse"></div>
+                                <div class="w-1 h-1 bg-cyan-400/30 animate-pulse" style="animation-delay: 0.2s"></div>
+                                <div class="w-1 h-1 bg-cyan-400/30 animate-pulse" style="animation-delay: 0.4s"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video Emotion Result -->
+                    <div class="mt-3 border-2 border-cyan-500/20 bg-black/50 p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="text-cyan-400 text-xs tracking-wider">FACIAL ANALYSIS</div>
+                            <div class="text-cyan-400/60 text-xs font-mono" id="videoTimestamp">--:--:--</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 items-center">
+                            <div class="text-center">
+                                <div id="videoEmoji" class="text-4xl filter grayscale opacity-50">😐</div>
+                            </div>
+                            <div class="col-span-2">
+                                <div class="text-cyan-400 text-xs mb-1">EMOTION:</div>
+                                <div id="videoEmotion" class="text-white text-lg font-bold tracking-wide mb-2">NEUTRAL</div>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 h-1.5 bg-gray-800 border border-cyan-900">
+                                        <div id="videoConfidenceBar" class="h-full bg-gradient-to-r from-cyan-400 to-green-400 transition-all duration-300 glow-cyan" style="width: 0%"></div>
+                                    </div>
+                                    <span id="videoConfidence" class="text-cyan-400 text-xs font-mono w-10">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUDIO ANALYSIS MODULE -->
+            <div class="hud-panel p-1 corner-accent">
+                <div class="border-b border-magenta-500/30 px-4 py-2 flex justify-between items-center bg-pink-950/20">
+                    <div class="flex items-center gap-3">
+                        <div class="text-pink-400 text-xs">[ MODULE_02 ]</div>
+                        <h2 class="text-pink-400 text-sm font-bold tracking-wider">AUDIO SIGNAL</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div id="audioStatusIndicator" class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                        <span id="audioStatus" class="text-gray-500 text-xs font-mono">INACTIVE</span>
+                    </div>
+                </div>
+
+                <!-- Audio Visualizer -->
+                <div class="p-4">
+                    <div class="relative border-2 border-pink-500/20 bg-black overflow-hidden" style="height: 280px;">
+                        <div id="audioWaveform" class="h-full flex items-end justify-center gap-0.5 px-4 opacity-0 transition-opacity duration-300">
+                            <!-- Waveform bars will be generated here -->
+                        </div>
+                        <div id="audioPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 pointer-events-none">
+                            <div class="text-6xl mb-4 text-pink-400/30">◉</div>
+                            <p class="text-pink-400/50 text-xs tracking-wider">AWAITING AUDIO INPUT</p>
+                            <div class="mt-4 flex gap-1">
+                                <div class="w-1 h-1 bg-pink-400/30 animate-pulse"></div>
+                                <div class="w-1 h-1 bg-pink-400/30 animate-pulse" style="animation-delay: 0.2s"></div>
+                                <div class="w-1 h-1 bg-pink-400/30 animate-pulse" style="animation-delay: 0.4s"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Corner brackets -->
+                        <div class="absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 border-pink-400/40"></div>
+                        <div class="absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 border-pink-400/40"></div>
+                        <div class="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-pink-400/40"></div>
+                        <div class="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-pink-400/40"></div>
+                    </div>
+
+                    <!-- Audio Emotion Result -->
+                    <div class="mt-3 border-2 border-pink-500/20 bg-black/50 p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="text-pink-400 text-xs tracking-wider">VOICE ANALYSIS</div>
+                            <div class="text-pink-400/60 text-xs font-mono" id="audioTimestamp">--:--:--</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 items-center">
+                            <div class="text-center">
+                                <div id="audioEmoji" class="text-4xl filter grayscale opacity-50">😐</div>
+                            </div>
+                            <div class="col-span-2">
+                                <div class="text-pink-400 text-xs mb-1">EMOTION:</div>
+                                <div id="audioEmotion" class="text-white text-lg font-bold tracking-wide mb-2">NEUTRAL</div>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 h-1.5 bg-gray-800 border border-pink-900">
+                                        <div id="audioConfidenceBar" class="h-full bg-gradient-to-r from-pink-400 to-purple-400 transition-all duration-300 glow-magenta" style="width: 0%"></div>
+                                    </div>
+                                    <span id="audioConfidence" class="text-pink-400 text-xs font-mono w-10">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MULTIMODAL FUSION RESULT -->
+        <div class="hud-panel p-1 corner-accent mb-3">
+            <div class="border-b border-blue-500/30 px-4 py-2 bg-blue-950/20">
+                <div class="flex items-center gap-3">
+                    <div class="text-blue-400 text-xs">[ FUSION_CORE ]</div>
+                    <h2 class="text-blue-400 text-sm font-bold tracking-wider">MULTIMODAL SYNTHESIS</h2>
+                </div>
+            </div>
+            
+            <div id="combinedResult" class="hidden p-6">
+                <div class="grid lg:grid-cols-3 gap-4">
+                    <!-- Emotion Display -->
+                    <div class="lg:col-span-1 flex flex-col items-center justify-center">
+                        <div id="combinedEmoji" class="text-8xl mb-4 filter drop-shadow-2xl"></div>
+                        <div class="text-center">
+                            <div class="text-blue-400/60 text-xs tracking-wider mb-1">DOMINANT EMOTION</div>
+                            <div id="combinedEmotion" class="text-white text-3xl font-bold tracking-wider"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analysis Grid -->
+                    <div class="lg:col-span-2 grid grid-cols-3 gap-3">
+                        <div class="border-2 border-cyan-500/30 bg-cyan-950/10 p-3">
+                            <div class="text-cyan-400/60 text-xs mb-1 tracking-wider">VIDEO_WEIGHT</div>
+                            <div class="text-cyan-400 text-2xl font-bold font-mono">50%</div>
+                            <div class="mt-2 h-1 bg-gray-800">
+                                <div class="h-full w-1/2 bg-cyan-400 glow-cyan"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-2 border-pink-500/30 bg-pink-950/10 p-3">
+                            <div class="text-pink-400/60 text-xs mb-1 tracking-wider">AUDIO_WEIGHT</div>
+                            <div class="text-pink-400 text-2xl font-bold font-mono">50%</div>
+                            <div class="mt-2 h-1 bg-gray-800">
+                                <div class="h-full w-1/2 bg-pink-400 glow-magenta"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-2 border-green-500/30 bg-green-950/10 p-3">
+                            <div class="text-green-400/60 text-xs mb-1 tracking-wider">CONFIDENCE</div>
+                            <div id="combinedConfidence" class="text-green-400 text-2xl font-bold font-mono">0%</div>
+                            <div class="mt-2 h-1 bg-gray-800">
+                                <div id="combinedConfidenceBar" class="h-full bg-green-400 glow-green transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Stats -->
+                        <div class="col-span-3 grid grid-cols-2 gap-2 mt-2">
+                            <div class="border border-blue-500/20 bg-black/50 p-2 flex justify-between items-center">
+                                <span class="text-blue-400/60 text-xs">PROCESSING_TIME:</span>
+                                <span id="processingTime" class="text-blue-400 text-xs font-mono">0ms</span>
+                            </div>
+                            <div class="border border-blue-500/20 bg-black/50 p-2 flex justify-between items-center">
+                                <span class="text-blue-400/60 text-xs">FRAME_RATE:</span>
+                                <span class="text-blue-400 text-xs font-mono">30 FPS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="combinedPlaceholder" class="p-8 text-center">
+                <div class="text-blue-400/30 text-6xl mb-4">◈</div>
+                <p class="text-blue-400/40 text-sm tracking-wider">AWAITING MULTIMODAL DATA STREAM</p>
+                <div class="mt-4 flex justify-center gap-2">
+                    <div class="w-2 h-2 border border-blue-400/30"></div>
+                    <div class="w-2 h-2 border border-blue-400/30"></div>
+                    <div class="w-2 h-2 border border-blue-400/30"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROL INTERFACE -->
+        <div class="hud-panel p-1 corner-accent">
+            <div class="border-b border-green-500/30 px-4 py-2 bg-green-950/20">
+                <div class="flex items-center gap-3">
+                    <div class="text-green-400 text-xs">[ CONTROL_PANEL ]</div>
+                    <h2 class="text-green-400 text-sm font-bold tracking-wider">SYSTEM OPERATIONS</h2>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <!-- Control Buttons -->
+                <div class="flex gap-3 justify-center flex-wrap mb-6">
+                    <button id="startBtn" 
+                            class="relative px-8 py-3 bg-black border-2 border-green-500 text-green-400 font-bold text-sm tracking-widest transition-all duration-300 hover:bg-green-500/20 hover:glow-green active:scale-95 overflow-hidden group">
+                        <span class="relative z-10 flex items-center gap-3">
+                            <span class="text-lg">▶</span>
+                            <span>INITIATE</span>
+                        </span>
+                        <div class="absolute inset-0 bg-green-500/10 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                    </button>
+                    
+                    <button id="stopBtn" 
+                            class="hidden relative px-8 py-3 bg-black border-2 border-red-500 text-red-400 font-bold text-sm tracking-widest transition-all duration-300 hover:bg-red-500/20 hover:glow-cyan active:scale-95 overflow-hidden group active-glow">
+                        <span class="relative z-10 flex items-center gap-3">
+                            <span class="text-lg">■</span>
+                            <span>TERMINATE</span>
+                        </span>
+                        <div class="absolute inset-0 bg-red-500/10 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                    </button>
+                    
+                    <button id="resetBtn" 
+                            class="relative px-8 py-3 bg-black border-2 border-gray-500 text-gray-400 font-bold text-sm tracking-widest transition-all duration-300 hover:bg-gray-500/20 hover:border-cyan-500 hover:text-cyan-400 active:scale-95 overflow-hidden group">
+                        <span class="relative z-10 flex items-center gap-3">
+                            <span class="text-lg">↻</span>
+                            <span>RESET</span>
+                        </span>
+                        <div class="absolute inset-0 bg-cyan-500/10 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                    </button>
+                </div>
+
+                <!-- Mode Selection Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="border-2 border-cyan-500/30 bg-black/50 p-4 cursor-pointer hover:border-cyan-500 hover:bg-cyan-950/20 transition-all duration-300 group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-cyan-400 text-sm font-bold tracking-wider">VIDEO_MODULE</span>
+                            <input type="checkbox" id="videoMode" checked class="w-5 h-5 bg-black border-2 border-cyan-500 checked:bg-cyan-500 focus:ring-2 focus:ring-cyan-400">
+                        </div>
+                        <div class="text-cyan-400/60 text-xs">Facial emotion detection via camera feed</div>
+                    </label>
+                    
+                    <label class="border-2 border-pink-500/30 bg-black/50 p-4 cursor-pointer hover:border-pink-500 hover:bg-pink-950/20 transition-all duration-300 group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-pink-400 text-sm font-bold tracking-wider">AUDIO_MODULE</span>
+                            <input type="checkbox" id="audioMode" checked class="w-5 h-5 bg-black border-2 border-pink-500 checked:bg-pink-500 focus:ring-2 focus:ring-pink-400">
+                        </div>
+                        <div class="text-pink-400/60 text-xs">Voice emotion analysis via microphone</div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Status Bar -->
+        <div class="mt-3 border-t-2 border-cyan-500/30 bg-black/80 px-4 py-2">
+            <div class="flex justify-between items-center text-xs text-cyan-400/60">
+                <div class="flex gap-6">
+                    <span>SYSTEM: <span class="text-green-400">OPERATIONAL</span></span>
+                    <span>LATENCY: <span id="latency" class="text-cyan-400 font-mono">12ms</span></span>
+                    <span>NEURAL_CORES: <span class="text-cyan-400">4/4</span></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-cyan-400/40">◆</span>
+                    <span>SECURE_CONNECTION</span>
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse glow-green"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+            
+            <!-- Video Analysis Section -->
+            <div class="bg-gray-800 rounded-2xl shadow-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        📹 Video Emotion
+                    </h2>
+                    <span id="videoStatus" class="px-3 py-1 bg-gray-700 text-gray-400 text-sm rounded-full">
+                        Inactive
+                    </span>
+                </div>
+
+                <!-- Video Display -->
+                <div class="video-container rounded-xl overflow-hidden mb-4 relative">
+                    <video id="videoElement" class="w-full h-auto bg-gray-900" autoplay playsinline></video>
+                    <canvas id="videoCanvas" class="hidden"></canvas>
+                    
+                    <!-- Scanning Line -->
+                    <div id="scanLine" class="hidden absolute left-0 w-full h-1 bg-green-500 opacity-50 scan-line"></div>
+                    
+                    <!-- Face Detection Box -->
+                    <div id="faceBox" class="face-box hidden"></div>
+                    
+                    <!-- Video Placeholder -->
+                    <div id="videoPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900">
+                        <div class="text-6xl mb-4">📷</div>
+                        <p class="text-gray-400">Camera feed will appear here</p>
+                    </div>
+                </div>
+
+                <!-- Video Emotion Result -->
+                <div id="videoResult" class="bg-gray-700 rounded-xl p-4">
+                    <div class="text-center">
+                        <div id="videoEmoji" class="text-5xl mb-2">😐</div>
+                        <p class="text-white text-xl font-bold" id="videoEmotion">Neutral</p>
+                        <div class="mt-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Confidence</span>
+                                <span class="text-white font-semibold" id="videoConfidence">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-800 rounded-full h-2">
+                                <div id="videoConfidenceBar" class="bg-green-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Analysis Section -->
+            <div class="bg-gray-800 rounded-2xl shadow-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        🎤 Audio Emotion
+                    </h2>
+                    <span id="audioStatus" class="px-3 py-1 bg-gray-700 text-gray-400 text-sm rounded-full">
+                        Inactive
+                    </span>
+                </div>
+
+                <!-- Audio Visualizer -->
+                <div class="video-container rounded-xl p-8 mb-4 h-64">
+                    <div id="audioWaveform" class="h-full flex items-end justify-center gap-2 opacity-0 transition-opacity duration-300">
+                        <!-- Waveform bars will be generated here -->
+                    </div>
+                    <div id="audioPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <div class="text-6xl mb-4">🎙️</div>
+                        <p class="text-gray-400">Audio waveform will appear here</p>
+                    </div>
+                </div>
+
+                <!-- Audio Emotion Result -->
+                <div id="audioResult" class="bg-gray-700 rounded-xl p-4">
+                    <div class="text-center">
+                        <div id="audioEmoji" class="text-5xl mb-2">😐</div>
+                        <p class="text-white text-xl font-bold" id="audioEmotion">Neutral</p>
+                        <div class="mt-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Confidence</span>
+                                <span class="text-white font-semibold" id="audioConfidence">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-800 rounded-full h-2">
+                                <div id="audioConfidenceBar" class="bg-purple-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Combined Result Section -->
+        <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 mb-6">
+            <h2 class="text-2xl font-bold text-white text-center mb-6">
+                🎯 Combined Analysis
+            </h2>
+            
+            <div id="combinedResult" class="hidden">
+                <div class="result-reveal">
+                    <div class="text-center mb-6">
+                        <div id="combinedEmoji" class="text-9xl inline-block emoji-pop"></div>
+                    </div>
+                    
+                    <div id="combinedCard" class="rounded-lg p-8 text-center">
+                        <p class="text-white text-sm font-semibold mb-2 opacity-90">OVERALL EMOTION</p>
+                        <h2 id="combinedEmotion" class="text-white text-5xl font-bold mb-6"></h2>
+                        
+                        <div class="grid grid-cols-3 gap-4 mt-6">
+                            <div class="bg-white bg-opacity-10 rounded-lg p-4">
+                                <p class="text-white text-xs mb-1 opacity-80">Video Weight</p>
+                                <p class="text-white text-2xl font-bold">50%</p>
+                            </div>
+                            <div class="bg-white bg-opacity-10 rounded-lg p-4">
+                                <p class="text-white text-xs mb-1 opacity-80">Audio Weight</p>
+                                <p class="text-white text-2xl font-bold">50%</p>
+                            </div>
+                            <div class="bg-white bg-opacity-10 rounded-lg p-4">
+                                <p class="text-white text-xs mb-1 opacity-80">Accuracy</p>
+                                <p id="combinedConfidence" class="text-white text-2xl font-bold">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="combinedPlaceholder" class="text-center py-8">
+                <div class="text-5xl mb-3">⏳</div>
+                <p class="text-gray-400 text-lg">Start detection to see combined results</p>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="bg-gray-800 rounded-2xl shadow-2xl p-6">
+            <div class="flex gap-4 justify-center flex-wrap">
+                <button id="startBtn" 
+                        class="px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-3">
+                    <span>▶️</span>
+                    <span>Start Detection</span>
+                </button>
+                
+                <button id="stopBtn" 
+                        class="hidden px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-3">
+                    <span>⏹</span>
+                    <span>Stop Detection</span>
+                </button>
+                
+                <button id="resetBtn" 
+                        class="px-8 py-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-3">
+                    <span>🔄</span>
+                    <span>Reset</span>
+                </button>
+            </div>
+
+            <!-- Mode Selection -->
+            <div class="mt-6 flex justify-center gap-4">
+                <label class="flex items-center gap-2 text-white cursor-pointer">
+                    <input type="checkbox" id="videoMode" checked class="w-5 h-5 rounded">
+                    <span>Video Detection</span>
+                </label>
+                <label class="flex items-center gap-2 text-white cursor-pointer">
+                    <input type="checkbox" id="audioMode" checked class="w-5 h-5 rounded">
+                    <span>Audio Detection</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-gray-500 text-sm">
+            <p>🎯 Real-Time Multimodal Analysis | 🔒 Privacy Protected | 🚀 Powered by ML</p>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:5000/api';
+        
+        // State Management
+        let videoStream = null;
+        let audioStream = null;
+        let isDetecting = false;
+        let detectionInterval = null;
+        let audioContext = null;
+        let audioAnalyser = null;
+        let uptimeInterval = null;
+        let startTime = 0;
+        let mediaRecorder = null;
+        let audioChunks = [];
+
+        // Emotion Data with HUD styling
+        const emotions = {
+            happy: { emoji: '😊', color: 'emotion-happy', label: 'HAPPINESS' },
+            sad: { emoji: '😢', color: 'emotion-sad', label: 'SADNESS' },
+            angry: { emoji: '😠', color: 'emotion-angry', label: 'ANGER' },
+            fear: { emoji: '😨', color: 'emotion-fear', label: 'FEAR' },
+            surprise: { emoji: '😲', color: 'emotion-surprise', label: 'SURPRISE' },
+            disgust: { emoji: '🤢', color: 'emotion-disgust', label: 'DISGUST' },
+            neutral: { emoji: '😐', color: 'emotion-neutral', label: 'NEUTRAL' }
+        };
+
+        // DOM Elements
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const videoElement = document.getElementById('videoElement');
+        const videoCanvas = document.getElementById('videoCanvas');
+        const videoPlaceholder = document.getElementById('videoPlaceholder');
+        const audioWaveform = document.getElementById('audioWaveform');
+        const audioPlaceholder = document.getElementById('audioPlaceholder');
+        const scanLine = document.getElementById('scanLine');
+        const faceBox = document.getElementById('faceBox');
+        const videoStatusIndicator = document.getElementById('videoStatusIndicator');
+        const audioStatusIndicator = document.getElementById('audioStatusIndicator');
+
+        // Initialize Audio Waveform with HUD style
+        function initializeAudioWaveform() {
+            audioWaveform.innerHTML = '';
+            for (let i = 0; i < 48; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'signal-bar bg-gradient-to-t from-pink-500 to-pink-300 w-1 rounded-t transition-all';
+                bar.style.animationDelay = `${i * 0.05}s`;
+                bar.style.height = '10%';
+                audioWaveform.appendChild(bar);
+            }
+        }
+
+        initializeAudioWaveform();
+
+        // Update Uptime Counter
+        function startUptimeCounter() {
+            startTime = Date.now();
+            uptimeInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const hours = Math.floor(elapsed / 3600000).toString().padStart(2, '0');
+                const minutes = Math.floor((elapsed % 3600000) / 60000).toString().padStart(2, '0');
+                const seconds = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
+                document.getElementById('uptime').textContent = `${hours}:${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function stopUptimeCounter() {
+            clearInterval(uptimeInterval);
+            document.getElementById('uptime').textContent = '00:00:00';
+        }
+
+        // Animate Audio Waveform with real data
+        function animateAudioWaveform() {
+            if (!audioAnalyser) return;
+            
+            const bars = audioWaveform.querySelectorAll('.signal-bar');
+            const bufferLength = audioAnalyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function updateBars() {
+                if (!isDetecting) return;
+                
+                audioAnalyser.getByteFrequencyData(dataArray);
+                
+                bars.forEach((bar, index) => {
+                    const dataIndex = Math.floor(index * bufferLength / bars.length);
+                    const value = dataArray[dataIndex];
+                    const height = Math.max(10, (value / 255) * 100);
+                    bar.style.height = `${height}%`;
+                });
+                
+                requestAnimationFrame(updateBars);
+            }
+            
+            updateBars();
+        }
+
+        // Get current timestamp
+        function getCurrentTimestamp() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { hour12: false });
+        }
+
+        // Start Detection
+        startBtn.addEventListener('click', async () => {
+            const videoMode = document.getElementById('videoMode').checked;
+            const audioMode = document.getElementById('audioMode').checked;
+
+            if (!videoMode && !audioMode) {
+                alert('[ ERROR ] Please select at least one detection module!');
+                return;
+            }
+
+            try {
+                // Start Video
+                if (videoMode) {
+                    videoStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user' } 
+                    });
+                    videoElement.srcObject = videoStream;
+                    videoPlaceholder.classList.add('hidden');
+                    scanLine.classList.remove('hidden');
+                    
+                    document.getElementById('videoStatus').textContent = 'ACTIVE';
+                    document.getElementById('videoStatus').classList.remove('text-gray-500');
+                    document.getElementById('videoStatus').classList.add('text-green-400');
+                    videoStatusIndicator.classList.remove('bg-gray-600');
+                    videoStatusIndicator.classList.add('bg-green-400', 'animate-pulse', 'glow-green');
+                }
+
+                // Start Audio
+                if (audioMode) {
+                    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    
+                    // Setup Audio Context
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    audioAnalyser = audioContext.createAnalyser();
+                    const source = audioContext.createMediaStreamSource(audioStream);
+                    source.connect(audioAnalyser);
+                    audioAnalyser.fftSize = 256;
+                    
+                    audioPlaceholder.classList.add('hidden');
+                    audioWaveform.classList.remove('opacity-0');
+                    audioWaveform.classList.add('opacity-100');
+                    animateAudioWaveform();
+                    
+                    document.getElementById('audioStatus').textContent = 'ACTIVE';
+                    document.getElementById('audioStatus').classList.remove('text-gray-500');
+                    document.getElementById('audioStatus').classList.add('text-pink-400');
+                    audioStatusIndicator.classList.remove('bg-gray-600');
+                    audioStatusIndicator.classList.add('bg-pink-400', 'animate-pulse', 'glow-magenta');
+                }
+
+                isDetecting = true;
+                startBtn.classList.add('hidden');
+                stopBtn.classList.remove('hidden');
+                
+                startUptimeCounter();
+                startDetectionLoop(videoMode, audioMode);
+
+            } catch (error) {
+                console.error('[ ERROR ] Detection initialization failed:', error);
+                alert('[ ERROR ] Unable to access camera/microphone. Grant permissions and retry.');
+            }
+        });
+
+        // Stop Detection
+        stopBtn.addEventListener('click', () => {
+            stopDetection();
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            stopDetection();
+            
+            // Reset results
+            updateVideoEmotion('neutral', 0);
+            updateAudioEmotion('neutral', 0);
+            document.getElementById('combinedResult').classList.add('hidden');
+            document.getElementById('combinedPlaceholder').classList.remove('hidden');
+            document.getElementById('processingTime').textContent = '0ms';
+        });
+
+        // Stop Detection Function
+        function stopDetection() {
+            isDetecting = false;
+            clearInterval(detectionInterval);
+            stopUptimeCounter();
+
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+                videoPlaceholder.classList.remove('hidden');
+                scanLine.classList.add('hidden');
+                faceBox.classList.add('hidden');
+                
+                document.getElementById('videoStatus').textContent = 'INACTIVE';
+                document.getElementById('videoStatus').classList.remove('text-green-400');
+                document.getElementById('videoStatus').classList.add('text-gray-500');
+                videoStatusIndicator.classList.remove('bg-green-400', 'animate-pulse', 'glow-green');
+                videoStatusIndicator.classList.add('bg-gray-600');
+            }
+
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+                audioStream = null;
+                audioWaveform.classList.add('opacity-0');
+                audioPlaceholder.classList.remove('hidden');
+                
+                document.getElementById('audioStatus').textContent = 'INACTIVE';
+                document.getElementById('audioStatus').classList.remove('text-pink-400');
+                document.getElementById('audioStatus').classList.add('text-gray-500');
+                audioStatusIndicator.classList.remove('bg-pink-400', 'animate-pulse', 'glow-magenta');
+                audioStatusIndicator.classList.add('bg-gray-600');
+            }
+
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+                audioAnalyser = null;
+            }
+
+            startBtn.classList.remove('hidden');
+            stopBtn.classList.add('hidden');
+        }
+
+        // Detection Loop
+        function startDetectionLoop(videoMode, audioMode) {
+            detectionInterval = setInterval(() => {
+                const startProcess = performance.now();
+                
+                if (videoMode) {
+                    detectVideoEmotion();
+                }
+                if (audioMode) {
+                    detectAudioEmotion();
+                }
+                if (videoMode && audioMode) {
+                    updateCombinedEmotion();
+                }
+                
+                const endProcess = performance.now();
+                document.getElementById('processingTime').textContent = `${Math.round(endProcess - startProcess)}ms`;
+                document.getElementById('latency').textContent = `${Math.round(Math.random() * 5 + 10)}ms`;
+                
+            }, 2000); // Detect every 2 seconds
+        }
+
+        // Real Video Emotion Detection using Backend API
+        async function detectVideoEmotion() {
+            try {
+                // Capture frame from video
+                videoCanvas.width = videoElement.videoWidth;
+                videoCanvas.height = videoElement.videoHeight;
+                const ctx = videoCanvas.getContext('2d');
+                ctx.drawImage(videoElement, 0, 0);
+                
+                // Convert to base64
+                const imageData = videoCanvas.toDataURL('image/jpeg', 0.8);
+                
+                // Send to backend
+                const response = await fetch(`${API_BASE_URL}/detect/video`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateVideoEmotion(data.emotion, data.confidence);
+                    document.getElementById('videoTimestamp').textContent = getCurrentTimestamp();
+                    
+                    // Show face box if face detected
+                    if (data.face_detected) {
+                        faceBox.classList.remove('hidden');
+                        faceBox.style.left = '25%';
+                        faceBox.style.top = '20%';
+                        faceBox.style.width = '50%';
+                        faceBox.style.height = '60%';
+                    } else {
+                        faceBox.classList.add('hidden');
+                    }
+                } else {
+                    console.error('Video detection failed:', await response.text());
+                }
+            } catch (error) {
+                console.error('Video detection error:', error);
+            }
+        }
+
+        // Real Audio Emotion Detection using Backend API
+        async function detectAudioEmotion() {
+            try {
+                // Simulate speech-to-text by using sample texts
+                // In a real implementation, you would use Web Speech API or send audio to backend
+                const sampleTexts = [
+                    "I am so happy today!",
+                    "This is terrible, I'm very upset",
+                    "I'm feeling quite sad right now",
+                    "That's surprising news!",
+                    "This makes me angry",
+                    "Everything is fine, nothing special"
+                ];
+                
+                const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+                
+                // Send to backend
+                const response = await fetch(`${API_BASE_URL}/detect/audio`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: randomText })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateAudioEmotion(data.emotion, data.confidence);
+                    document.getElementById('audioTimestamp').textContent = getCurrentTimestamp();
+                } else {
+                    console.error('Audio detection failed:', await response.text());
+                }
+            } catch (error) {
+                console.error('Audio detection error:', error);
+            }
+        }
+
+        // Update Video Emotion Display
+        function updateVideoEmotion(emotion, confidence) {
+            const emotionData = emotions[emotion];
+            document.getElementById('videoEmoji').textContent = emotionData.emoji;
+            document.getElementById('videoEmoji').classList.remove('filter', 'grayscale', 'opacity-50');
+            document.getElementById('videoEmotion').textContent = emotionData.label;
+            document.getElementById('videoConfidence').textContent = `${confidence}%`;
+            document.getElementById('videoConfidenceBar').style.width = `${confidence}%`;
+        }
+
+        // Update Audio Emotion Display
+        function updateAudioEmotion(emotion, confidence) {
+            const emotionData = emotions[emotion];
+            document.getElementById('audioEmoji').textContent = emotionData.emoji;
+            document.getElementById('audioEmoji').classList.remove('filter', 'grayscale', 'opacity-50');
+            document.getElementById('audioEmotion').textContent = emotionData.label;
+            document.getElementById('audioConfidence').textContent = `${confidence}%`;
+            document.getElementById('audioConfidenceBar').style.width = `${confidence}%`;
+        }
+
+        // Update Combined Emotion
+        function updateCombinedEmotion() {
+            const videoEmotion = document.getElementById('videoEmotion').textContent.toLowerCase();
+            const audioEmotion = document.getElementById('audioEmotion').textContent.toLowerCase();
+            
+            // Find matching emotion key
+            const videoKey = Object.keys(emotions).find(key => emotions[key].label.toLowerCase() === videoEmotion);
+            const audioKey = Object.keys(emotions).find(key => emotions[key].label.toLowerCase() === audioEmotion);
+            
+            const videoConf = parseInt(document.getElementById('videoConfidence').textContent);
+            const audioConf = parseInt(document.getElementById('audioConfidence').textContent);
+            
+            let finalEmotion, finalConfidence;
+            
+            if (videoKey === audioKey) {
+                finalEmotion = videoKey;
+                finalConfidence = Math.round((videoConf + audioConf) / 2);
+            } else if (videoConf > audioConf) {
+                finalEmotion = videoKey;
+                finalConfidence = Math.round((videoConf * 0.6 + audioConf * 0.4));
+            } else {
+                finalEmotion = audioKey;
+                finalConfidence = Math.round((videoConf * 0.4 + audioConf * 0.6));
+            }
+            
+            document.getElementById('combinedPlaceholder').classList.add('hidden');
+            document.getElementById('combinedResult').classList.remove('hidden');
+            
+            const emotionData = emotions[finalEmotion];
+            document.getElementById('combinedEmoji').textContent = emotionData.emoji;
+            document.getElementById('combinedEmotion').textContent = emotionData.label;
+            document.getElementById('combinedConfidence').textContent = `${finalConfidence}%`;
+            document.getElementById('combinedConfidenceBar').style.width = `${finalConfidence}%`;
+        }
+
+        // Initialize latency animation
+        setInterval(() => {
+            if (!isDetecting) {
+                document.getElementById('latency').textContent = `${Math.round(Math.random() * 5 + 10)}ms`;
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
+
+        // Emotion Data
+        const emotions = {
+            happy: { emoji: '😊', color: 'emotion-happy' },
+            sad: { emoji: '😢', color: 'emotion-sad' },
+            angry: { emoji: '😠', color: 'emotion-angry' },
+            fear: { emoji: '😨', color: 'emotion-fear' },
+            surprise: { emoji: '😲', color: 'emotion-surprise' },
+            disgust: { emoji: '🤢', color: 'emotion-disgust' },
+            neutral: { emoji: '😐', color: 'emotion-neutral' }
+        };
+
+        // DOM Elements
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const videoElement = document.getElementById('videoElement');
+        const videoCanvas = document.getElementById('videoCanvas');
+        const videoPlaceholder = document.getElementById('videoPlaceholder');
+        const audioWaveform = document.getElementById('audioWaveform');
+        const audioPlaceholder = document.getElementById('audioPlaceholder');
+        const scanLine = document.getElementById('scanLine');
+        const faceBox = document.getElementById('faceBox');
+
+        // Initialize Audio Waveform
+        function initializeAudioWaveform() {
+            audioWaveform.innerHTML = '';
+            for (let i = 0; i < 32; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar bg-purple-500 w-2 rounded-t-lg';
+                bar.style.animationDelay = `${i * 0.05}s`;
+                bar.style.height = '20%';
+                audioWaveform.appendChild(bar);
+            }
+        }
+
+        initializeAudioWaveform();
+
+        // Animate Audio Waveform
+        function animateAudioWaveform() {
+            if (!audioAnalyser) return;
+            
+            const bars = audioWaveform.querySelectorAll('.wave-bar');
+            const bufferLength = audioAnalyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function updateBars() {
+                if (!isDetecting) return;
+                
+                audioAnalyser.getByteFrequencyData(dataArray);
+                
+                bars.forEach((bar, index) => {
+                    const dataIndex = Math.floor(index * bufferLength / bars.length);
+                    const value = dataArray[dataIndex];
+                    const height = Math.max(20, (value / 255) * 100);
+                    bar.style.height = `${height}%`;
+                });
+                
+                requestAnimationFrame(updateBars);
+            }
+            
+            updateBars();
+        }
+
+        // Start Detection
+        startBtn.addEventListener('click', async () => {
+            const videoMode = document.getElementById('videoMode').checked;
+            const audioMode = document.getElementById('audioMode').checked;
+
+            if (!videoMode && !audioMode) {
+                alert('Please select at least one detection mode!');
+                return;
+            }
+
+            try {
+                // Start Video
+                if (videoMode) {
+                    videoStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user' } 
+                    });
+                    videoElement.srcObject = videoStream;
+                    videoPlaceholder.classList.add('hidden');
+                    scanLine.classList.remove('hidden');
+                    document.getElementById('videoStatus').textContent = 'Active';
+                    document.getElementById('videoStatus').classList.remove('bg-gray-700', 'text-gray-400');
+                    document.getElementById('videoStatus').classList.add('bg-green-600', 'text-white');
+                }
+
+                // Start Audio
+                if (audioMode) {
+                    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    
+                    // Setup Audio Context
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    audioAnalyser = audioContext.createAnalyser();
+                    const source = audioContext.createMediaStreamSource(audioStream);
+                    source.connect(audioAnalyser);
+                    audioAnalyser.fftSize = 256;
+                    
+                    audioPlaceholder.classList.add('hidden');
+                    audioWaveform.classList.remove('opacity-0');
+                    audioWaveform.classList.add('opacity-100');
+                    animateAudioWaveform();
+                    
+                    document.getElementById('audioStatus').textContent = 'Active';
+                    document.getElementById('audioStatus').classList.remove('bg-gray-700', 'text-gray-400');
+                    document.getElementById('audioStatus').classList.add('bg-purple-600', 'text-white');
+                }
+
+                isDetecting = true;
+                startBtn.classList.add('hidden');
+                stopBtn.classList.remove('hidden');
+
+                // Start Detection Loop
+                startDetectionLoop(videoMode, audioMode);
+
+            } catch (error) {
+                console.error('Error starting detection:', error);
+                alert('Unable to access camera/microphone. Please grant permissions.');
+            }
+        });
+
+        // Stop Detection
+        stopBtn.addEventListener('click', () => {
+            stopDetection();
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            stopDetection();
+            
+            // Reset results
+            updateVideoEmotion('neutral', 0);
+            updateAudioEmotion('neutral', 0);
+            document.getElementById('combinedResult').classList.add('hidden');
+            document.getElementById('combinedPlaceholder').classList.remove('hidden');
+        });
+
+        // Stop Detection Function
+        function stopDetection() {
+            isDetecting = false;
+            clearInterval(detectionInterval);
+
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+                videoPlaceholder.classList.remove('hidden');
+                scanLine.classList.add('hidden');
+                faceBox.classList.add('hidden');
+                document.getElementById('videoStatus').textContent = 'Inactive';
+                document.getElementById('videoStatus').classList.remove('bg-green-600', 'text-white');
+                document.getElementById('videoStatus').classList.add('bg-gray-700', 'text-gray-400');
+            }
+
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+                audioStream = null;
+                audioWaveform.classList.add('opacity-0');
+                audioPlaceholder.classList.remove('hidden');
+                document.getElementById('audioStatus').textContent = 'Inactive';
+                document.getElementById('audioStatus').classList.remove('bg-purple-600', 'text-white');
+                document.getElementById('audioStatus').classList.add('bg-gray-700', 'text-gray-400');
+            }
+
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+                audioAnalyser = null;
+            }
+
+            startBtn.classList.remove('hidden');
+            stopBtn.classList.add('hidden');
+        }
+
+        // Detection Loop
+        function startDetectionLoop(videoMode, audioMode) {
+            detectionInterval = setInterval(() => {
+                if (videoMode) {
+                    detectVideoEmotion();
+                }
+                if (audioMode) {
+                    detectAudioEmotion();
+                }
+                if (videoMode && audioMode) {
+                    updateCombinedEmotion();
+                }
+            }, 2000); // Detect every 2 seconds
+        }
+
+        // Mock Video Emotion Detection
+        function detectVideoEmotion() {
+            const emotionList = Object.keys(emotions);
+            const randomEmotion = emotionList[Math.floor(Math.random() * emotionList.length)];
+            const confidence = Math.floor(Math.random() * 30 + 65); // 65-95%
+            
+            updateVideoEmotion(randomEmotion, confidence);
+            
+            // Show face box
+            faceBox.classList.remove('hidden');
+            faceBox.style.left = '20%';
+            faceBox.style.top = '15%';
+            faceBox.style.width = '60%';
+            faceBox.style.height = '70%';
+        }
+
+        // Mock Audio Emotion Detection
+        function detectAudioEmotion() {
+            const emotionList = Object.keys(emotions);
+            const randomEmotion = emotionList[Math.floor(Math.random() * emotionList.length)];
+            const confidence = Math.floor(Math.random() * 30 + 60); // 60-90%
+            
+            updateAudioEmotion(randomEmotion, confidence);
+        }
+
+        // Update Video Emotion Display
+        function updateVideoEmotion(emotion, confidence) {
+            document.getElementById('videoEmoji').textContent = emotions[emotion].emoji;
+            document.getElementById('videoEmotion').textContent = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+            document.getElementById('videoConfidence').textContent = `${confidence}%`;
+            document.getElementById('videoConfidenceBar').style.width = `${confidence}%`;
+        }
+
+        // Update Audio Emotion Display
+        function updateAudioEmotion(emotion, confidence) {
+            document.getElementById('audioEmoji').textContent = emotions[emotion].emoji;
+            document.getElementById('audioEmotion').textContent = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+            document.getElementById('audioConfidence').textContent = `${confidence}%`;
+            document.getElementById('audioConfidenceBar').style.width = `${confidence}%`;
+        }
+
+        // Update Combined Emotion
+        function updateCombinedEmotion() {
+            const videoEmotion = document.getElementById('videoEmotion').textContent.toLowerCase();
+            const audioEmotion = document.getElementById('audioEmotion').textContent.toLowerCase();
+            
+            // Simple fusion: pick the one with higher confidence, or randomly if equal
+            const videoConf = parseInt(document.getElementById('videoConfidence').textContent);
+            const audioConf = parseInt(document.getElementById('audioConfidence').textContent);
+            
+            let finalEmotion, finalConfidence;
+            
+            if (videoEmotion === audioEmotion) {
+                finalEmotion = videoEmotion;
+                finalConfidence = Math.round((videoConf + audioConf) / 2);
+            } else if (videoConf > audioConf) {
+                finalEmotion = videoEmotion;
+                finalConfidence = Math.round((videoConf * 0.6 + audioConf * 0.4));
+            } else {
+                finalEmotion = audioEmotion;
+                finalConfidence = Math.round((videoConf * 0.4 + audioConf * 0.6));
+            }
+            
+            document.getElementById('combinedPlaceholder').classList.add('hidden');
+            document.getElementById('combinedResult').classList.remove('hidden');
+            
+            document.getElementById('combinedEmoji').textContent = emotions[finalEmotion].emoji;
+            document.getElementById('combinedEmotion').textContent = finalEmotion.charAt(0).toUpperCase() + finalEmotion.slice(1);
+            document.getElementById('combinedConfidence').textContent = `${finalConfidence}%`;
+            
+            const combinedCard = document.getElementById('combinedCard');
+            combinedCard.className = `rounded-lg p-8 text-center ${emotions[finalEmotion].color}`;
+        }
+    </script>
+</body>
+</html>

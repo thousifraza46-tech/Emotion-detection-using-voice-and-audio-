@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multimodal Emotion Recognition Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+        }
+
+        .card-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .features-list li {
+            padding: 8px 0;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .features-list li:before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status-working {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-demo {
+            background: #FF9800;
+            color: white;
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tech-badge {
+            background: #f0f0f0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .results-container.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎭 Multimodal Emotion Recognition System</h1>
+            <p>AI-Powered Emotion Detection from Audio and Video</p>
+        </header>
+
+        <div class="cards-container">
+            <!-- Audio Emotion Recognition -->
+            <div class="card">
+                <h2><span class="card-icon">🎵</span> Audio Emotion Analysis</h2>
+                <p class="card-description">
+                    Advanced neural network-based emotion detection from audio features using MFCC, Chroma, and Mel-spectrogram analysis.
+                </p>
+                <ul class="features-list">
+                    <li>180 audio features extracted</li>
+                    <li>MLP Neural Network classifier</li>
+                    <li>4 emotions: calm, happy, fearful, disgust</li>
+                    <li>46.67% accuracy on test data</li>
+                </ul>
+                <span class="status-badge status-working">✓ Working</span>
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="window.location.href='file:///d:/Multimodal%20Emotion%20Recognition%20Integrating%20Audio%20and%20Video%20Analysis/improvement1.ipynb'">
+                        Open Notebook
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video + Speech Recognition -->
+            <div class="card">
+                <h2><span class="card-icon">📹</span> Multimodal Detection</h2>
+                <p class="card-description">
+                    Real-time emotion detection combining facial expressions (video) and speech content analysis simultaneously.
+                </p>
+                <ul class="features-list">
+                    <li>Webcam facial emotion detection (FER)</li>
+                    <li>Speech-to-text emotion analysis</li>
+                    <li>Multi-threaded processing</li>
+                    <li>Real-time visualization</li>
+                </ul>
+                <span class="status-badge status-demo">Demo Ready</span>
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="window.location.href='file:///d:/Multimodal%20Emotion%20Recognition%20Integrating%20Audio%20and%20Video%20Analysis/combo14.ipynb'">
+                        Open Notebook
+                    </button>
+                </div>
+            </div>
+
+            <!-- Speech Emotion -->
+            <div class="card">
+                <h2><span class="card-icon">🎤</span> Speech Emotion Detector</h2>
+                <p class="card-description">
+                    Standalone microphone-based emotion recognition using Google Speech API and DistilBERT transformer model.
+                </p>
+                <ul class="features-list">
+                    <li>Google Speech Recognition API</li>
+                    <li>DistilBERT emotion classifier</li>
+                    <li>Microphone input support</li>
+                    <li>Confidence score reporting</li>
+                </ul>
+                <span class="status-badge status-demo">Demo Ready</span>
+                <div style="margin-top: 20px;">
+                    <a href="app.py" class="btn" download>Download Script</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="info-section">
+            <h3>📊 System Information</h3>
+            <p><strong>Environment:</strong> env_emotion (Python 3.10.0)</p>
+            <p><strong>Project Path:</strong> d:\Multimodal Emotion Recognition Integrating Audio and Video Analysis</p>
+            <p><strong>Status:</strong> <span style="color: #4CAF50; font-weight: bold;">✓ Fully Operational</span></p>
+            
+            <h3 style="margin-top: 25px;">🛠️ Technology Stack</h3>
+            <div class="tech-stack">
+                <span class="tech-badge">Python 3.10</span>
+                <span class="tech-badge">Librosa</span>
+                <span class="tech-badge">Scikit-learn</span>
+                <span class="tech-badge">Transformers</span>
+                <span class="tech-badge">PyTorch</span>
+                <span class="tech-badge">OpenCV</span>
+                <span class="tech-badge">NumPy</span>
+                <span class="tech-badge">Pandas</span>
+                <span class="tech-badge">Matplotlib</span>
+            </div>
+        </div>
+
+        <!-- Quick Start Guide -->
+        <div class="info-section">
+            <h3>🚀 Quick Start Guide</h3>
+            <ol style="line-height: 2; color: #555;">
+                <li><strong>Audio Emotion Analysis:</strong> Open improvement1.ipynb in Jupyter and run all cells</li>
+                <li><strong>Video + Speech:</strong> Open combo14.ipynb and execute cells for real-time detection</li>
+                <li><strong>Speech Only:</strong> Run app.py from terminal for microphone-based detection</li>
+            </ol>
+            
+            <h3 style="margin-top: 25px;">📈 Performance Metrics</h3>
+            <ul style="line-height: 2; color: #555; list-style: none;">
+                <li>⚡ <strong>Execution Time:</strong> ~209ms per analysis</li>
+                <li>🎯 <strong>Model Accuracy:</strong> 46.67% (synthetic data)</li>
+                <li>📊 <strong>Features Extracted:</strong> 180 per audio sample</li>
+                <li>🧠 <strong>Neural Network:</strong> 100 neurons, 50 iterations</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>© 2025 Multimodal Emotion Recognition System | AI-Powered Emotion Analysis</p>
+        </footer>
+    </div>
+
+    <script>
+        // Smooth scroll and animations
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transition = 'all 0.3s ease';
+            });
+        });
+
+        // Show notification on button click
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (!this.href && !this.onclick) {
+                    e.preventDefault();
+                    alert('Opening project component...');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
